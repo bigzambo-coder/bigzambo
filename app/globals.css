@@ -24,3 +24,40 @@ body {
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+body:has(.coach-shell) { background: #eef3ee; color: #18322b; font-family: system-ui, sans-serif; }
+.coach-shell { width: min(100%, 42rem); margin-inline: auto; padding: max(1rem, env(safe-area-inset-top)) 1rem max(1rem, env(safe-area-inset-bottom)); }
+.coach-header, .coach-entry-head { display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+.coach-header { padding: .4rem 0 1rem; }
+.coach-brand { font-size: 1.3rem; font-weight: 850; letter-spacing: -.055em; }
+.coach-brand span { color: #317859; margin-right: .2rem; }
+.coach-badge { display: inline-block; background: #dfedce; color: #314b2a; border-radius: 99px; padding: .33rem .7rem; font-size: .87rem; font-weight: 700; }
+.coach-nav { display: grid; grid-template-columns: repeat(3, 1fr); gap: .25rem; padding: .25rem; margin-bottom: .85rem; background: #dfe9e1; border-radius: .9rem; }
+.coach-nav button { min-height: 44px; border-radius: .7rem; font-size: .92rem; font-weight: 720; cursor: pointer; }
+.coach-nav button[aria-pressed="true"] { background: white; color: #18392d; }
+.coach-hero { position: relative; isolation: isolate; overflow: hidden; border-radius: 1.3rem; background: #193830; color: #f9fff6; padding: clamp(1.35rem, 5vw, 2.25rem); }
+.coach-eyebrow { color: #dcfa84; font-size: .78rem; font-weight: 750; letter-spacing: .13em; }
+.coach-hero h1 { margin: .55rem 0 .65rem; font-size: clamp(2.3rem, 8vw, 3.55rem); font-weight: 850; line-height: 1.08; letter-spacing: -.075em; }
+.coach-hero p { max-width: 24rem; line-height: 1.65; color: #e1eee6; }
+.coach-spark { position: absolute; z-index: -1; right: -.25rem; top: -.9rem; font-size: clamp(8rem, 31vw, 13rem); color: #dcfa84; opacity: .18; line-height: 1; }
+.coach-card { margin-top: .85rem; border-radius: 1.2rem; background: #fff; padding: clamp(1rem, 4vw, 1.5rem); border: 1px solid #dce7dd; }
+.coach-card h1, .coach-card h2 { font-weight: 800; letter-spacing: -.04em; }
+.coach-card h1 { font-size: 1.65rem; }
+.coach-card h2 { font-size: 1.22rem; }
+.coach-card p { margin-top: .45rem; line-height: 1.6; }
+.coach-form { display: grid; gap: .85rem; }
+.coach-form label { display: grid; gap: .37rem; min-width: 0; font-size: .9rem; font-weight: 700; }
+.coach-form :is(textarea,input,select) { width: 100%; min-height: 46px; padding: .65rem .72rem; background: #f6f9f5; border: 1px solid #ccdacf; border-radius: .7rem; color: #173a2e; font-size: 1rem; font-weight: 500; }
+.coach-form textarea { resize: vertical; }
+.coach-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
+.coach-primary { min-height: 50px; padding: .5rem; border-radius: .8rem; background: #dcfa84; color: #18332a; font-size: 1rem; font-weight: 800; cursor: pointer; }
+.coach-form small, .coach-status, .coach-shell footer { color: #496054; font-size: .84rem; }
+.coach-result h2, .coach-guide h2 { margin-top: .8rem; }
+.coach-list { margin-top: .65rem; }
+.coach-list li { border-top: 1px solid #e0e8df; padding-block: .45rem .75rem; }
+.coach-delete { min-height: 44px; padding: .25rem .6rem; color: #8c3232; font-size: .9rem; cursor: pointer; }
+.coach-note { white-space: pre-wrap; overflow-wrap: anywhere; }
+.coach-status { margin-top: .65rem; }
+.coach-status:empty { margin: 0; }
+.coach-shell footer { text-align: center; margin-top: 1.15rem; }
+.coach-shell :focus-visible { outline: 2px solid #317859; outline-offset: 3px; }
