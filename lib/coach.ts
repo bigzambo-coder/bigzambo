@@ -16,6 +16,29 @@ export interface CoachProvider {
   analyze(input: Omit<CheckIn, "id" | "date">): Promise<CoachResult>;
 }
 
+// Compare local calendar days, not elapsed hours, so DST doesn't shift the week.
+const dayMs = 86_400_000;
+function calendarDay(date: Date) {
+  return Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()) / dayMs;
+}
+
+export function summarizeWeek(entries: CheckIn[], now = new Date()) {
+  const today = calendarDay(now);
+  const start = today - ((now.getDay() + 6) % 7);
+  const weekly = entries.map((entry) => ({ entry, date: new Date(entry.date) }))
+    .filter(({ date }) => calendarDay(date) >= start && calendarDay(date) <= today && date <= now)
+    .sort((a, b) => a.date.getTime() - b.date.getTime());
+  const weights = weekly.flatMap(({ entry }) => entry.weight !== null && Number.isFinite(entry.weight) ? [entry.weight] : []);
+  const weightChange = weights.length > 1 ? Number((weights[weights.length - 1] - weights[0]).toFixed(1)) : null;
+  return {
+    checkIns: weekly.length,
+    days: new Set(weekly.map(({ date }) => calendarDay(date))).size,
+    notes: weekly.filter(({ entry }) => entry.note.trim()).length,
+    medicationLogs: weekly.filter(({ entry }) => entry.medication).length,
+    weightChange,
+  };
+}
+
 export const demoCoach: CoachProvider = {
   async analyze({ weight, medication, note }) {
     const fields = [weight !== null && `체중 ${weight} kg`,

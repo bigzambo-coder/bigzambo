@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useState, type FormEvent } from "react";
-import { demoCoach, type CheckIn, type CoachResult } from "@/lib/coach";
+import { useEffect, useRef, useState, type FormEvent } from "react";
+import { demoCoach, summarizeWeek, type CheckIn, type CoachResult } from "@/lib/coach";
 
 const key = "onul-coach-checkins-v1";
 const format = new Intl.DateTimeFormat("ko-KR", { month: "long", day: "numeric" });
@@ -12,6 +12,12 @@ export default function Coach() {
   const [note, setNote] = useState("");
   const [result, setResult] = useState<CoachResult>();
   const [status, setStatus] = useState("");
+  const [showExample, setShowExample] = useState(false);
+  const exampleHeading = useRef<HTMLHeadingElement>(null);
+
+  useEffect(() => {
+    if (showExample && tab === "coach") exampleHeading.current?.focus();
+  }, [showExample, tab]);
 
   useEffect(() => {
     try {
@@ -54,6 +60,7 @@ export default function Coach() {
   }
 
   const weights = entries.filter((entry) => entry.weight !== null);
+  const week = tab === "history" ? summarizeWeek(entries) : null;
   return (
     <main className="coach-shell">
       <header className="coach-header">
@@ -69,7 +76,31 @@ export default function Coach() {
           <span className="coach-eyebrow">MY DAILY CHECK-IN</span>
           <h1>오늘 몸은<br />어땠나요?</h1>
           <p>식사, 움직임, 컨디션을 짧게 남겨보세요. 위고비·마운자로를 사용 중이라면 투약 여부도 함께 기록할 수 있어요.</p>
+          <button className="coach-example-button" type="button" aria-expanded={showExample}
+            aria-controls="coach-example" onClick={() => setShowExample((visible) => !visible)}>
+            {showExample ? "예시 닫기" : "예시로 체험하기"}
+          </button>
           <span className="coach-spark" aria-hidden="true">✦</span>
+        </section>
+        <section id="coach-example" className="coach-card coach-example" hidden={!showExample}
+          aria-labelledby="coach-example-heading">
+          <span className="coach-badge">가상 데이터 · 실제 AI 분석 아님</span>
+          <h2 id="coach-example-heading" ref={exampleHeading} tabIndex={-1}>예시 체크인</h2>
+          <p>“점심에 김밥을 먹고 저녁에 20분 걸었어요. 월요일에 위고비를 투약했고, 화요일 아침에 속이 메스꺼웠어요.”</p>
+          <div className="coach-example-panel">
+            <h3>오늘의 코치 카드</h3>
+            <p>식사·걷기·투약·컨디션을 남겼어요.</p>
+            <p><strong>다음 체크인:</strong> 불편함이 있었던 시간과 얼마나 지속됐는지 메모해 보세요.</p>
+          </div>
+          <div className="coach-example-panel">
+            <h3>진료용 요약 예시</h3>
+            <dl>
+              <dt>투약 기록</dt><dd>월요일 · 위고비 · 용량 미기록</dd>
+              <dt>컨디션 메모</dt><dd>화요일 아침에 메스꺼움</dd>
+              <dt>진료 때 물어볼 질문</dt><dd>이런 불편함이 다시 생기면 어떤 정보를 기록해서 말씀드리면 좋을까요?</dd>
+            </dl>
+          </div>
+          <small>예시는 내 기록에 저장되지 않아요. 진단이나 투약 지시를 제공하지 않아요.</small>
         </section>
         <form className="coach-card coach-form" onSubmit={checkIn}>
           <h2>오늘의 체크인</h2>
@@ -91,6 +122,20 @@ export default function Coach() {
       </>}
       {tab === "history" && <section className="coach-card">
         <h1>내 기록</h1>
+        {week && <section className="coach-week" aria-labelledby="coach-week-heading">
+          <h2 id="coach-week-heading">이번 주 요약</h2>
+          <p>이 기기에 저장된 월요일부터 오늘까지의 기록이에요.</p>
+          {week.checkIns === 0 ? <p><strong>이번 주에 저장한 기록이 아직 없어요.</strong></p> :
+            <dl className="coach-week-grid">
+              <div><dt>기록한 날</dt><dd>{week.days}일</dd></div>
+              <div><dt>체크인</dt><dd>{week.checkIns}건</dd></div>
+              <div><dt>생활 메모</dt><dd>{week.notes}건</dd></div>
+              <div><dt>투약 기록</dt><dd>{week.medicationLogs}건</dd></div>
+              <div className="coach-week-weight"><dt>체중 변화 (첫 기록 → 최근 기록)</dt>
+                <dd>{week.weightChange === null ? "체중 기록 2건부터 표시" :
+                  `${week.weightChange > 0 ? "+" : ""}${week.weightChange.toFixed(1)} kg`}</dd></div>
+            </dl>}
+        </section>}
         {weights.length > 0 && <p>최근 기록 체중: <strong>{weights[0].weight} kg</strong></p>}
         {entries.length === 0 ? <p>아직 저장한 체크인이 없어요. 오늘 코치에서 첫 기록을 남겨보세요.</p> :
           <ul className="coach-list">{entries.map((entry) => <li key={entry.id}>
