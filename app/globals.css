@@ -74,3 +74,8 @@ body:has(.coach-shell) { background: #eef3ee; color: #18322b; font-family: syste
 .coach-week-grid > div { background: #fff; padding: .55rem .65rem; border-radius: .55rem; }
 .coach-week-grid dd { font-weight: 800; }
 .coach-week-weight { grid-column: 1 / -1; }
+.coach-visit h3 { margin-top: .9rem; font-size: 1rem; font-weight: 800; }
+.coach-visit li { display: grid; gap: .15rem; padding: .55rem .7rem; margin-top: .35rem; border-radius: .55rem; background: #fff; }
+.coach-visit details { margin-top: .85rem; }
+.coach-visit summary { padding-block: .55rem; min-height: 44px; font-weight: 700; cursor: pointer; }
+.coach-fields input[type="date"] { min-width: 0; }

@@ -1,10 +1,11 @@
 "use client";
 
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { demoCoach, summarizeWeek, type CheckIn, type CoachResult } from "@/lib/coach";
+import { demoCoach, localDateKey, summarizeVisit, summarizeWeek, type CheckIn, type CoachResult } from "@/lib/coach";
 
 const key = "onul-coach-checkins-v1";
 const format = new Intl.DateTimeFormat("ko-KR", { month: "long", day: "numeric" });
+const fullDate = new Intl.DateTimeFormat("ko-KR", { dateStyle: "medium" });
 
 export default function Coach() {
   const [tab, setTab] = useState("coach");
@@ -13,6 +14,7 @@ export default function Coach() {
   const [result, setResult] = useState<CoachResult>();
   const [status, setStatus] = useState("");
   const [showExample, setShowExample] = useState(false);
+  const [medication, setMedication] = useState("");
   const exampleHeading = useRef<HTMLHeadingElement>(null);
 
   useEffect(() => {
@@ -45,22 +47,35 @@ export default function Coach() {
     const form = event.currentTarget;
     const fields = new FormData(form);
     const weight = String(fields.get("weight") ?? "");
+    const discomfort = String(fields.get("discomfort") ?? "").trim();
+    const dose = String(fields.get("doseMg") ?? "");
+    const doseMg = dose ? Number(dose) : undefined;
+    const injectionDate = String(fields.get("injectionDate") ?? "");
+    const now = new Date();
     const input = { note: note.trim(), weight: weight ? Number(weight) : null,
-      medication: String(fields.get("medication") ?? "") };
-    if (!input.note && input.weight === null && !input.medication) {
-      setStatus("메모, 체중, 투약 기록 중 하나를 입력해 주세요.");
+      medication };
+    if (!input.note && input.weight === null && !input.medication && !discomfort) {
+      setStatus("메모, 체중, 투약 기록, 불편했던 점 중 하나를 입력해 주세요.");
+      return;
+    }
+    if (medication && (!injectionDate || injectionDate > localDateKey(now) ||
+      (doseMg !== undefined && (!Number.isFinite(doseMg) || doseMg <= 0)))) {
+      setStatus("실제로 투약한 날짜를 입력하고, 용량을 적는다면 0보다 큰 숫자로 입력해 주세요.");
       return;
     }
     const id = crypto.randomUUID?.() ?? `${Date.now()}-${Math.random().toString(36).slice(2)}`;
-    if (!persist([{ ...input, id, date: new Date().toISOString() }, ...entries],
+    const injection = medication ? { injectionDate, doseMg } : {};
+    if (!persist([{ ...input, ...injection, discomfort, id, date: now.toISOString() }, ...entries],
       "이 기기에 체크인을 저장했어요.")) return;
     form.reset();
     setNote("");
-    setResult(await demoCoach.analyze(input));
+    setMedication("");
+    setResult(await demoCoach.analyze({ ...input, hasDiscomfort: Boolean(discomfort) }));
   }
 
   const weights = entries.filter((entry) => entry.weight !== null);
   const week = tab === "history" ? summarizeWeek(entries) : null;
+  const visit = tab === "history" ? summarizeVisit(entries) : null;
   return (
     <main className="coach-shell">
       <header className="coach-header">
@@ -109,8 +124,15 @@ export default function Coach() {
           </label>
           <div className="coach-fields">
             <label>체중 (kg)<input name="weight" type="number" inputMode="decimal" min="1" max="700" step="0.1" placeholder="선택 입력" /></label>
-            <label>오늘 투약 기록<select name="medication" defaultValue=""><option value="">선택 안 함</option><option>위고비</option><option>마운자로</option><option>기타 처방약</option></select></label>
+            <label>주사 기록<select name="medication" value={medication} onChange={(event) => setMedication(event.target.value)}><option value="">선택 안 함</option><option>위고비</option><option>마운자로</option><option>기타 처방약</option></select></label>
           </div>
+          {medication && <div className="coach-fields">
+            <label>주사 맞은 날짜<input name="injectionDate" type="date" required defaultValue={localDateKey(new Date())} max={localDateKey(new Date())} /></label>
+            <label>맞은 용량 (mg)<input name="doseMg" type="number" inputMode="decimal" min="0" step="any" placeholder="선택 입력" /></label>
+          </div>}
+          <label>불편했던 점 (선택)
+            <textarea name="discomfort" rows={2} maxLength={1200} placeholder="불편했던 점과 언제 있었는지 적어주세요." />
+          </label>
           <button className="coach-primary" type="submit">저장하고 체험 결과 보기</button>
           <small>기록은 이 브라우저에만 저장되고 외부로 전송되지 않아요.</small>
         </form>
@@ -122,6 +144,28 @@ export default function Coach() {
       </>}
       {tab === "history" && <section className="coach-card">
         <h1>내 기록</h1>
+        {visit && <section className="coach-week coach-visit" aria-labelledby="coach-visit-heading">
+          <h2 id="coach-visit-heading">진료용 요약</h2>
+          <p>내가 저장한 기록만 모았어요. 최근 기록부터 표시해요.</p>
+          <h3>주사 날짜 · 약 이름 · 용량</h3>
+          {visit.injections.length ? <ul>{visit.injections.map((entry) => <li key={entry.id}>
+            <strong>{entry.displayDate}{!entry.injectionDate && " (체크인 날짜)"}</strong>
+            <span>{entry.medication} · {entry.doseMg !== undefined ? `${entry.doseMg} mg` : "용량 미기록"}</span>
+          </li>)}</ul> : <p>저장한 주사 기록이 없어요.</p>}
+          <h3>불편했던 점</h3>
+          {visit.discomfort.length ? <ul>{visit.discomfort.map((entry) => <li key={entry.id}>
+            <strong>{fullDate.format(new Date(entry.date))} 기록</strong>
+            <span className="coach-note">{entry.discomfort}</span>
+          </li>)}</ul> : <p>따로 저장한 불편함 기록이 없어요.</p>}
+          {visit.legacyNotes.length > 0 && <details>
+            <summary>이전 체크인 메모 보기 ({visit.legacyNotes.length}건)</summary>
+            <p>이전 일반 메모는 불편함으로 분류하지 않고 원문 그대로 보여줘요.</p>
+            <ul>{visit.legacyNotes.map((entry) => <li key={entry.id}>
+              <strong>{fullDate.format(new Date(entry.date))}</strong>
+              <span className="coach-note">{entry.note}</span>
+            </li>)}</ul>
+          </details>}
+        </section>}
         {week && <section className="coach-week" aria-labelledby="coach-week-heading">
           <h2 id="coach-week-heading">이번 주 요약</h2>
           <p>이 기기에 저장된 월요일부터 오늘까지의 기록이에요.</p>
