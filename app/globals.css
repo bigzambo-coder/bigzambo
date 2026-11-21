@@ -52,7 +52,7 @@ body:has(.coach-shell) { background: #eef3ee; color: #18322b; font-family: syste
 .coach-fields { display: grid; grid-template-columns: 1fr 1fr; gap: .7rem; }
 .coach-primary { min-height: 50px; padding: .5rem; border-radius: .8rem; background: #dcfa84; color: #18332a; font-size: 1rem; font-weight: 800; cursor: pointer; }
 .coach-form small, .coach-status, .coach-shell footer { color: #496054; font-size: .84rem; }
-.coach-result h2, .coach-guide h2 { margin-top: .8rem; }
+.coach-guide h2 { margin-top: .8rem; }
 .coach-list { margin-top: .65rem; }
 .coach-list li { border-top: 1px solid #e0e8df; padding-block: .45rem .75rem; }
 .coach-delete { min-height: 44px; padding: .25rem .6rem; color: #8c3232; font-size: .9rem; cursor: pointer; }
@@ -74,8 +74,9 @@ body:has(.coach-shell) { background: #eef3ee; color: #18322b; font-family: syste
 .coach-week-grid > div { background: #fff; padding: .55rem .65rem; border-radius: .55rem; }
 .coach-week-grid dd { font-weight: 800; }
 .coach-week-weight { grid-column: 1 / -1; }
-.coach-visit h3 { margin-top: .9rem; font-size: 1rem; font-weight: 800; }
-.coach-visit li { display: grid; gap: .15rem; padding: .55rem .7rem; margin-top: .35rem; border-radius: .55rem; background: #fff; }
-.coach-visit details { margin-top: .85rem; }
-.coach-visit summary { padding-block: .55rem; min-height: 44px; font-weight: 700; cursor: pointer; }
+.coach-personal h3 { margin-top: .9rem; font-size: 1rem; font-weight: 800; }
+.coach-personal li { display: grid; gap: .15rem; padding: .55rem .7rem; margin-top: .35rem; border-radius: .55rem; background: #fff; }
+.coach-personal small { color: #496054; font-size: .875rem; }
+.coach-personal details { margin-top: .85rem; }
+.coach-personal summary { padding-block: .55rem; min-height: 44px; font-weight: 700; cursor: pointer; }
 .coach-fields input[type="date"] { min-width: 0; }

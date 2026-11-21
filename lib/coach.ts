@@ -24,7 +24,7 @@ export function localDateKey(date: Date) {
     .map((part) => String(part).padStart(2, "0")).join("-");
 }
 
-export function summarizeVisit(entries: CheckIn[]) {
+export function summarizePersonalRecords(entries: CheckIn[]) {
   const recent = [...entries].sort((a, b) => Date.parse(b.date) - Date.parse(a.date));
   return {
     injections: recent.filter((entry) => entry.medication)
